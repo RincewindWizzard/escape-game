@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 from struct import pack
 from time import sleep, time
-import serial, sys, re, readline, random, signal
+import serial, sys, re, readline, random, signal, os
 import serial.tools.list_ports
 import colorama
 from colorama import Fore, Back, Style
@@ -35,7 +35,7 @@ gramma = "TODO: text"
 # prints some gibberish to simulate a system boot
 def print_gibberish():
   start = time()
-  with open('./gibberish', 'r') as f:
+  with open(os.path.join(os.path.dirname(__file__), 'gibberish'), 'r') as f:
     lines = f.readlines()
     for line in lines:
       print(line, end='')
@@ -46,7 +46,7 @@ def print_gibberish():
 def switch_socket(network, btn, state):
   msg = pack('BBB', network, btn, state)
   for i in range(3):
-    port.write(msg)
+    if port: port.write(msg)
 
 def set_power(state):
   switch_socket(network, btn, state)
@@ -65,52 +65,61 @@ def prompt(msg):
     print('Hilfe ist unterwegs.')
   return cmd
 
-# use the first serial port available
-if len(serial.tools.list_ports.comports()) == 0:
-  print('Konnte mich nicht mit der Steuerkonsole verbinden!')
-  exit(1)
+
+
+def start_prometheus():
+  try:
+      cls()
+      print(Fore.GREEN, end='')
+
+      while not prompt('Bitte Passwort eingeben: ') == password:
+        print('Falsches Passwort!')
+
+      print_gibberish()
+      cls()
+      print(header_logo)
+      print('Starte das Kontroll-Programm für Projekt Prometheus')
+      sleep(0.5)
+
+      print('Verbinde mit Prometheus Datenbank', end='')
+      for i in range(3):
+        print('.', end='')
+        sys.stdout.flush()
+        sleep(1)
+      print(" Verbindung hergestellt.")
+      while True:
+        cmd = prompt('$ ')
+        if cmd == 'lumos':
+          set_power(True)
+        elif cmd == 'nox':
+          set_power(False)
+        elif cmd == 'odyne':
+          print('Lösung gefunden!')
+          sendmail('Escape Game', 'Die Gruppe hat die Lösung gefunden!')
+        elif cmd == 'gramma':
+          print(gramma)
+        elif cmd == 'ennoia':
+          print(ennoia)
+        elif cmd == 'arche':
+          set_power(False)
+          return
+        elif cmd == 'hilfe':
+          ...
+        else:
+          print('Unbekannter Befehl')
+  except KeyboardInterrupt:
+    ...
+
 
 if __name__ == '__main__':
   while True:
-    try:
+    # use the first serial port available
+    if len(serial.tools.list_ports.comports()) > 1:
       with serial.Serial(serial.tools.list_ports.comports()[0].device, 9600) as port:
-        cls()
-        print(Fore.GREEN, end='')
+        start_prometheus()
+    else:
+      print('Konnte mich nicht mit der Steuerkonsole verbinden!')
+      sleep(1)
+      port = None
+      start_prometheus()
 
-        while not prompt('Bitte Passwort eingeben: ') == password:
-          print('Falsches Passwort!')
-
-        print_gibberish()
-        cls()
-        print(header_logo)
-        print('Starte das Kontroll-Programm für Projekt Prometheus')
-        sleep(0.5)
-
-        print('Verbinde mit Prometheus Datenbank', end='')
-        for i in range(3):
-          print('.', end='')
-          sys.stdout.flush()
-          sleep(1)
-        print(" Verbindung hergestellt.")
-        while True:
-          cmd = prompt('$ ')
-          if cmd == 'lumos':
-            set_power(True)
-          elif cmd == 'nox':
-            set_power(False)
-          elif cmd == 'odyne':
-            print('Lösung gefunden!')
-            sendmail('Escape Game', 'Die Gruppe hat die Lösung gefunden!')
-          elif cmd == 'gramma':
-            print(gramma)
-          elif cmd == 'ennoia':
-            print(ennoia)
-          elif cmd == 'arche':
-            set_power(False)
-            raise "Reboot" # Coder-Jesus died for our sins
-          elif cmd == 'hilfe':
-            ...
-          else:
-            print('Unbekannter Befehl')
-    except:
-      print("Reboot")
