@@ -114,7 +114,7 @@ def start_prometheus():
 if __name__ == '__main__':
   while True:
     # use the first serial port available
-    if len(serial.tools.list_ports.comports()) > 1:
+    if len(serial.tools.list_ports.comports()) > 0:
       with serial.Serial(serial.tools.list_ports.comports()[0].device, 9600) as port:
         start_prometheus()
     else:
