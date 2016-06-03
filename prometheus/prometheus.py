@@ -109,6 +109,8 @@ def start_prometheus():
           print('Unbekannter Befehl')
   except KeyboardInterrupt:
     ...
+  except EOFError:
+    ...
 
 
 if __name__ == '__main__':
