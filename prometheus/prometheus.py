@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 from struct import pack
 from time import sleep, time
-import serial, sys, re, readline, random, signal, os
+import serial, sys, re, readline, random, signal, os, io, subprocess
+from subprocess import Popen, PIPE, STDOUT
 import serial.tools.list_ports
 import colorama
 from colorama import Fore, Back, Style
@@ -55,8 +56,11 @@ def cls():
   sys.stdout.write("\x1b[2J\x1b[H")
 
 def sendmail(subject, msg):
-  # TODO: Send mail
-  ...
+  try:
+    p = Popen(["mail", "-s", subject, "prometheus@magierdinge.de"], stdin=PIPE)
+    p.communicate(input=bytes(msg, 'UTF-8'))
+  except Exception as e:
+    print(e)
 
 def prompt(msg):
   cmd = input(msg).lower()
