@@ -45,7 +45,7 @@ def print_gibberish():
   
 
 def switch_socket(network, btn, state):
-  msg = pack('BBB', network, btn, state)
+  msg = pack('BBB', network, btn, not state) # TODO: should be state
   for i in range(3):
     if port: port.write(msg)
 
